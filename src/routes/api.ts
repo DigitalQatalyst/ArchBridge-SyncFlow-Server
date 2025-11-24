@@ -4,6 +4,10 @@ import * as ardoqWorkspaces from "../controllers/ardoq/ardoqWorkspaces";
 import * as ardoqComponents from "../controllers/ardoq/ardoqComponents";
 import * as ardoqConfigurations from "../controllers/ardoq/ardoqConfigurations";
 import * as ardoqHierarchy from "../controllers/ardoq/ardoqHierarchy";
+import * as azureDevOpsTestConnections from "../controllers/azureDevOps/azureDevOpsTestConnections";
+import * as azureDevOpsConfigurations from "../controllers/azureDevOps/azureDevOpsConfigurations";
+import * as azureDevOpsProjects from "../controllers/azureDevOps/azureDevOpsProjects";
+import * as azureDevOpsWorkItems from "../controllers/azureDevOps/azureDevOpsWorkItems";
 
 const router = express.Router();
 
@@ -39,6 +43,28 @@ router.get("/", (_req: Request, res: Response) => {
             "/api/ardoq/workspaces/:workspaceId/domains/:domainId/initiatives",
           initiativeHierarchy:
             "/api/ardoq/workspaces/:workspaceId/initiatives/:initiativeId/hierarchy",
+        },
+      },
+      azureDevOps: {
+        configurations: {
+          create: "POST /api/azure-devops/configurations",
+          test: "GET /api/azure-devops/test-connection?configId=xxx",
+          list: "GET /api/azure-devops/configurations",
+          get: "GET /api/azure-devops/configurations/:id",
+          active: "GET /api/azure-devops/configurations/active",
+          update: "PUT /api/azure-devops/configurations/:id",
+          delete: "DELETE /api/azure-devops/configurations/:id",
+          activate: "POST /api/azure-devops/configurations/:id/activate",
+        },
+        projects: {
+          create: "POST /api/azure-devops/projects?configId=xxx",
+        },
+        processes: {
+          list: "GET /api/azure-devops/processes?configId=xxx",
+        },
+        workItems: {
+          create:
+            "POST /api/azure-devops/projects/:project/workitems?configId=xxx",
         },
       },
     },
@@ -114,6 +140,55 @@ router.get(
 router.get(
   "/ardoq/workspaces/:workspaceId/initiatives/:initiativeId/hierarchy",
   ardoqHierarchy.getInitiativeHierarchy
+);
+
+// Azure DevOps API routes
+// Configuration creation and testing routes
+router.post(
+  "/azure-devops/configurations",
+  azureDevOpsTestConnections.createConfiguration
+);
+router.get(
+  "/azure-devops/test-connection",
+  azureDevOpsTestConnections.testConnectionWithConfig
+);
+
+// Configuration management routes
+router.get(
+  "/azure-devops/configurations",
+  azureDevOpsConfigurations.listConfigurations
+);
+router.get(
+  "/azure-devops/configurations/active",
+  azureDevOpsConfigurations.getActiveConfiguration
+);
+router.get(
+  "/azure-devops/configurations/:id",
+  azureDevOpsConfigurations.getConfiguration
+);
+router.put(
+  "/azure-devops/configurations/:id",
+  azureDevOpsConfigurations.updateConfiguration
+);
+router.delete(
+  "/azure-devops/configurations/:id",
+  azureDevOpsConfigurations.deleteConfiguration
+);
+router.post(
+  "/azure-devops/configurations/:id/activate",
+  azureDevOpsConfigurations.activateConfiguration
+);
+
+// Projects
+router.post("/azure-devops/projects", azureDevOpsProjects.createProject);
+
+// Process Templates
+router.get("/azure-devops/processes", azureDevOpsProjects.getProcessTemplates);
+
+// Work Items
+router.post(
+  "/azure-devops/projects/:project/workitems",
+  azureDevOpsWorkItems.createWorkItems
 );
 
 export default router;

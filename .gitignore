@@ -8,6 +8,7 @@ yarn.lock
 .env.local
 .env.*.local
 
+
 # Logs
 logs
 *.log
@@ -42,3 +43,4 @@ config/
 #supabase migrations
 supabase-migration.sql
 supabase-add-test-status-columns.sql
+supabase-azure-devops-migration.sql
