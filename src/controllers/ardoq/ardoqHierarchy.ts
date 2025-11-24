@@ -62,7 +62,6 @@ export const getInitiativesForDomain = async (
     const { workspaceId, domainId } = req.params;
     const configId = req.query.configId as string | undefined;
     const client = await getArdoqClient(configId);
-    console.log(workspaceId, domainId);
 
     // Fetch all components for the workspace
     const response = await client.get("/api/v2/components", {

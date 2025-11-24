@@ -57,14 +57,17 @@ router.get("/", (_req: Request, res: Response) => {
           activate: "POST /api/azure-devops/configurations/:id/activate",
         },
         projects: {
+          list: "GET /api/azure-devops/projects?configId=xxx",
           create: "POST /api/azure-devops/projects?configId=xxx",
         },
         processes: {
           list: "GET /api/azure-devops/processes?configId=xxx",
         },
         workItems: {
+          check:
+            "GET /api/azure-devops/projects/:project/workitems/check?configId=xxx",
           create:
-            "POST /api/azure-devops/projects/:project/workitems?configId=xxx",
+            "POST /api/azure-devops/projects/:project/workitems?configId=xxx&overwrite=true",
         },
       },
     },
@@ -180,12 +183,17 @@ router.post(
 );
 
 // Projects
+router.get("/azure-devops/projects", azureDevOpsProjects.listProjects);
 router.post("/azure-devops/projects", azureDevOpsProjects.createProject);
 
 // Process Templates
 router.get("/azure-devops/processes", azureDevOpsProjects.getProcessTemplates);
 
 // Work Items
+router.get(
+  "/azure-devops/projects/:project/workitems/check",
+  azureDevOpsWorkItems.checkWorkItems
+);
 router.post(
   "/azure-devops/projects/:project/workitems",
   azureDevOpsWorkItems.createWorkItems

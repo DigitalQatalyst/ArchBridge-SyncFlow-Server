@@ -348,6 +348,50 @@ export class AzureDevOpsClient {
   }
 
   /**
+   * List all projects in the organization
+   * @returns Projects list response with value array containing project details
+   */
+  async listProjects(): Promise<any> {
+    this.initialize();
+    const path = "/_apis/projects?api-version=7.1";
+    return this.get<any>(path);
+  }
+
+  /**
+   * Query work items using WIQL (Work Item Query Language)
+   * @param project - Project ID or name
+   * @param wiql - WIQL query string
+   * @returns Work item query result with workItems array
+   */
+  async queryWorkItems(project: string, wiql: string): Promise<any> {
+    this.initialize();
+    const path = `${project}/_apis/wit/wiql?api-version=7.1`;
+    const requestBody = { query: wiql };
+    return this.post<any>(path, requestBody);
+  }
+
+  /**
+   * Delete work items from a project
+   * @param project - Project ID or name
+   * @param workItemIds - Array of work item IDs to delete
+   * @param destroy - If true, permanently deletes work items. If false, moves them to recycle bin (default: false)
+   * @returns Delete operation response
+   */
+  async deleteWorkItems(
+    project: string,
+    workItemIds: number[],
+    destroy: boolean = false
+  ): Promise<any> {
+    this.initialize();
+    const path = `${project}/_apis/wit/workitemsdelete?api-version=7.1`;
+    const requestBody = {
+      ids: workItemIds,
+      destroy: destroy,
+    };
+    return this.post<any>(path, requestBody);
+  }
+
+  /**
    * Get API configuration info (for debugging)
    */
   getConfig() {

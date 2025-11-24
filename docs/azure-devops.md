@@ -9,6 +9,10 @@ The server provides integration with the Azure DevOps REST API, allowing you to:
 - Authenticate and connect to your Azure DevOps organization using Personal Access Tokens (PAT)
 - Manage multiple Azure DevOps configurations
 - Test connections by listing projects
+- List all projects in your organization
+- Check if a project has existing work items
+- Create work items (Epics, Features, User Stories) from Ardoq hierarchy data
+- Overwrite existing work items by deleting and recreating them
 
 ## Setup
 
@@ -472,7 +476,6 @@ If `capabilities` is provided but `processTemplate` or `versioncontrol` is missi
 - Use the operation reference to check the status of project creation
 - The configuration must have passed the connection test (`testPassed: true`) to create projects
 - If no `configId` is provided, the active configuration will be used
-- Project listing is available through the test connection endpoint (`GET /api/azure-devops/test-connection`)
 
 **Error Response (if configuration not tested):**
 
@@ -483,7 +486,136 @@ If `capabilities` is provided but `processTemplate` or `versioncontrol` is missi
 }
 ```
 
+#### List Projects
+
+List all projects in the Azure DevOps organization.
+
+**Endpoint:** `GET /api/azure-devops/projects?configId=xxx`
+
+**Query Parameters:**
+
+- `configId` (optional): Use a specific saved configuration. If omitted, uses the active configuration.
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "project-id-1",
+      "name": "My Project",
+      "description": "Project description",
+      "state": "wellFormed",
+      "visibility": "private",
+      "lastUpdateTime": "2024-01-01T12:00:00.000Z"
+    },
+    {
+      "id": "project-id-2",
+      "name": "Another Project",
+      "description": "Another project description",
+      "state": "wellFormed",
+      "visibility": "private",
+      "lastUpdateTime": "2024-01-02T12:00:00.000Z"
+    }
+  ],
+  "count": 2
+}
+```
+
+**Error Response:**
+
+```json
+{
+  "success": false,
+  "error": "Failed to list projects",
+  "details": "HTTP 401: Unauthorized"
+}
+```
+
+**Important Notes:**
+
+- The configuration must have passed the connection test (`testPassed: true`) to list projects
+- If no `configId` is provided, the active configuration will be used
+- Returns all projects accessible to the authenticated user
+
 ### Work Items Management
+
+Create work items (Epics, Features, User Stories) in Azure DevOps from Ardoq hierarchy data. The syncing process uses Server-Sent Events (SSE) to stream real-time progress updates.
+
+**Documentation**: See [Syncing Progress Documentation](./syncing-progress.md) for complete details on:
+
+- How the syncing process works
+- Real-time progress streaming with SSE
+- Event types and data structures
+- Frontend integration examples
+- Progress display guidelines
+
+**Key Features:**
+
+- Sequential creation of Epics → Features → User Stories
+- Parent-child relationship establishment
+- Real-time progress updates via SSE
+- Error handling for partial failures
+- Check for existing work items before creation
+- Overwrite mode to delete and recreate all work items
+
+#### Check Work Items
+
+Check if a project has existing work items and get the count.
+
+**Endpoint:** `GET /api/azure-devops/projects/:project/workitems/check?configId=xxx`
+
+**Path Parameters:**
+
+- `project` - Azure DevOps project ID or project name
+
+**Query Parameters:**
+
+- `configId` (optional): Use a specific saved configuration. If omitted, uses the active configuration.
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "hasWorkItems": true,
+    "count": 15,
+    "workItemIds": [12345, 12346, 12347, 12348, 12349, 12350, 12351, 12352, 12353, 12354, 12355, 12356, 12357, 12358, 12359]
+  }
+}
+```
+
+**Response (No Work Items):**
+
+```json
+{
+  "success": true,
+  "data": {
+    "hasWorkItems": false,
+    "count": 0,
+    "workItemIds": []
+  }
+}
+```
+
+**Error Response:**
+
+```json
+{
+  "success": false,
+  "error": "Failed to check work items",
+  "details": "HTTP 404: Project not found"
+}
+```
+
+**Important Notes:**
+
+- Uses WIQL (Work Item Query Language) to query all work items in the project
+- Returns all work item IDs found in the project
+- The configuration must have passed the connection test (`testPassed: true`)
+- If no `configId` is provided, the active configuration will be used
 
 Create work items (Epics, Features, User Stories) in Azure DevOps from Ardoq hierarchy data. The syncing process uses Server-Sent Events (SSE) to stream real-time progress updates.
 
@@ -506,7 +638,7 @@ Create work items (Epics, Features, User Stories) in Azure DevOps from Ardoq hie
 
 Create work items from Ardoq hierarchy data. This endpoint streams progress updates using Server-Sent Events (SSE).
 
-**Endpoint:** `POST /api/azure-devops/projects/:project/workitems?configId=xxx`
+**Endpoint:** `POST /api/azure-devops/projects/:project/workitems?configId=xxx&overwrite=true`
 
 **Path Parameters:**
 
@@ -515,6 +647,7 @@ Create work items from Ardoq hierarchy data. This endpoint streams progress upda
 **Query Parameters:**
 
 - `configId` (optional): Use a specific saved configuration. If omitted, uses the active configuration.
+- `overwrite` (optional): If set to `true`, deletes all existing work items in the project before creating new ones. Defaults to `false`.
 
 **Request Body (application/json):**
 
@@ -549,9 +682,18 @@ Create work items from Ardoq hierarchy data. This endpoint streams progress upda
 
 **Response (text/event-stream):**
 
-The response is a Server-Sent Events (SSE) stream that emits events as work items are created:
+The response is a Server-Sent Events (SSE) stream that emits events as work items are created. When `overwrite=true`, additional events are emitted for the overwrite operation:
 
 ```text
+event: overwrite:started
+data: {"type":"overwrite:started","data":{"message":"Overwrite mode enabled. Checking for existing work items...","timestamp":"2024-01-15T10:29:50Z"}}
+
+event: overwrite:deleting
+data: {"type":"overwrite:deleting","data":{"message":"Found 15 existing work items. Deleting...","count":15,"timestamp":"2024-01-15T10:29:51Z"}}
+
+event: overwrite:deleted
+data: {"type":"overwrite:deleted","data":{"message":"Successfully deleted 15 existing work items","count":15,"timestamp":"2024-01-15T10:29:55Z"}}
+
 event: epic:created
 data: {"type":"epic:created","data":{"ardoqId":"epic-123","name":"Epic Name","azureDevOpsId":12345,"azureDevOpsUrl":"https://dev.azure.com/org/project/_workitems/edit/12345","timestamp":"2024-01-15T10:30:00Z"}}
 
@@ -566,6 +708,16 @@ data: {"type":"sync:complete","data":{"summary":{"total":3,"created":3,"failed":
 ```
 
 **Event Types:**
+
+**Overwrite Events (only when `overwrite=true`):**
+
+- `overwrite:started` - Overwrite operation started, checking for existing work items
+- `overwrite:deleting` - Found existing work items, deletion in progress
+- `overwrite:deleted` - Successfully deleted existing work items
+- `overwrite:no-items` - No existing work items found, proceeding with creation
+- `overwrite:error` - Overwrite operation failed, work item creation aborted
+
+**Work Item Events:**
 
 - `epic:created` - Epic successfully created
 - `feature:created` - Feature successfully created
@@ -584,6 +736,24 @@ data: {"type":"sync:complete","data":{"summary":{"total":3,"created":3,"failed":
 - The process continues even if individual items fail
 - The configuration must have passed the connection test (`testPassed: true`)
 - See [Syncing Progress Documentation](./syncing-progress.md) for detailed frontend integration examples
+
+**Overwrite Mode:**
+
+When `overwrite=true` is specified:
+
+1. The endpoint first queries all existing work items in the project using WIQL
+2. If work items are found, they are permanently deleted (destroyed, not moved to recycle bin)
+3. After deletion completes, new work items are created as normal
+4. Overwrite events are streamed via SSE to track the deletion progress
+5. If the overwrite operation fails, work item creation is aborted and an error event is sent
+
+**Warning:** Overwrite mode permanently deletes all work items in the project. This action cannot be undone. Use with caution.
+
+**Example with Overwrite:**
+
+```bash
+POST /api/azure-devops/projects/MyProject/workitems?configId=xxx&overwrite=true
+```
 
 **Error Response (if configuration not tested):**
 
@@ -657,6 +827,9 @@ curl -X POST "http://localhost:3000/api/azure-devops/configurations/azdo-config-
 # List available process templates
 curl "http://localhost:3000/api/azure-devops/processes?configId=azdo-config-xxx"
 
+# List all projects
+curl "http://localhost:3000/api/azure-devops/projects?configId=azdo-config-xxx"
+
 # Create a project
 curl -X POST "http://localhost:3000/api/azure-devops/projects?configId=azdo-config-xxx" \
   -H "Content-Type: application/json" \
@@ -664,6 +837,16 @@ curl -X POST "http://localhost:3000/api/azure-devops/projects?configId=azdo-conf
     "name": "My New Project",
     "description": "Project description",
     "visibility": "private"
+  }'
+
+# Check if a project has work items
+curl "http://localhost:3000/api/azure-devops/projects/MyProject/workitems/check?configId=azdo-config-xxx"
+
+# Create work items with overwrite mode
+curl -X POST "http://localhost:3000/api/azure-devops/projects/MyProject/workitems?configId=azdo-config-xxx&overwrite=true" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "epics": [...]
   }'
 ```
 
@@ -705,6 +888,12 @@ const processesResponse = await fetch(
 );
 const { data: templates } = await processesResponse.json();
 
+// List all projects
+const listProjectsResponse = await fetch(
+  `http://localhost:3000/api/azure-devops/projects?configId=${config.configuration.id}`
+);
+const { data: projects } = await listProjectsResponse.json();
+
 // Create a project
 const createProjectResponse = await fetch(
   `http://localhost:3000/api/azure-devops/projects?configId=${config.configuration.id}`,
@@ -719,6 +908,26 @@ const createProjectResponse = await fetch(
   }
 );
 const projectOperation = await createProjectResponse.json();
+
+// Check if a project has work items
+const checkWorkItemsResponse = await fetch(
+  `http://localhost:3000/api/azure-devops/projects/MyProject/workitems/check?configId=${config.configuration.id}`
+);
+const { data: workItemsCheck } = await checkWorkItemsResponse.json();
+console.log(`Project has ${workItemsCheck.count} work items`);
+
+// Create work items with overwrite mode
+const createWorkItemsResponse = await fetch(
+  `http://localhost:3000/api/azure-devops/projects/MyProject/workitems?configId=${config.configuration.id}&overwrite=true`,
+  {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      epics: [...]
+    })
+  }
+);
+// Handle SSE stream for work items creation
 ```
 
 ### Using Axios
@@ -748,6 +957,11 @@ const { data: configs } = await api.get('/configurations');
 // Activate a configuration
 const { data: activated } = await api.post(`/configurations/${config.data.configuration.id}/activate`);
 
+// List all projects
+const { data: projects } = await api.get('/projects', {
+  params: { configId: config.data.configuration.id }
+});
+
 // Create a project
 const { data: projectOperation } = await api.post('/projects', {
   name: 'My New Project',
@@ -756,6 +970,22 @@ const { data: projectOperation } = await api.post('/projects', {
 }, {
   params: { configId: config.data.configuration.id }
 });
+
+// Check if a project has work items
+const { data: workItemsCheck } = await api.get('/projects/MyProject/workitems/check', {
+  params: { configId: config.data.configuration.id }
+});
+
+// Create work items with overwrite mode
+const createWorkItemsResponse = await api.post('/projects/MyProject/workitems', {
+  epics: [...]
+}, {
+  params: { 
+    configId: config.data.configuration.id,
+    overwrite: true
+  }
+});
+// Handle SSE stream for work items creation
 ```
 
 ---

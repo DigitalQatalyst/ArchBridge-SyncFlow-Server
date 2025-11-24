@@ -45,6 +45,45 @@ export const getProcessTemplates = async (
   }
 };
 
+/**
+ * List all projects in the organization
+ * GET /api/azure-devops/projects?configId=xxx
+ * Query params: configId (optional) - If provided, uses that configuration. If omitted, uses active configuration.
+ */
+export const listProjects = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const configId = req.query.configId as string | undefined;
+
+    // Get configured client
+    const client = await getAzureDevOpsClient(configId);
+
+    // Fetch all projects
+    const projectsResponse = await client.listProjects();
+
+    // Extract projects array from response (API returns { value: [...], count: N })
+    const projects = projectsResponse.value || projectsResponse || [];
+    const count = projectsResponse.count || projects.length;
+
+    res.json({
+      success: true,
+      data: projects,
+      count: count,
+    });
+  } catch (error: any) {
+    const statusCode = error.statusCode || 500;
+    res.status(statusCode).json({
+      success: false,
+      error: error.message || "Failed to list projects",
+      details: error.statusCode
+        ? `HTTP ${error.statusCode}: ${error.message || "Failed to list projects"}`
+        : "Failed to list projects",
+    });
+  }
+};
+
 interface CreateProjectRequest {
   name: string;
   description?: string;

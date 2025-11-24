@@ -166,6 +166,138 @@ function sendSSEEvent(res: Response, eventType: string, data: any): void {
 }
 
 /**
+ * Delete work items in chunks of 20 to avoid API threshold limits
+ * @param client - Azure DevOps client instance
+ * @param project - Project ID or name
+ * @param workItemIds - Array of work item IDs to delete
+ * @param res - Express response object for SSE events
+ */
+async function deleteWorkItemsInChunks(
+  client: any,
+  project: string,
+  workItemIds: number[],
+  res: Response
+): Promise<void> {
+  const CHUNK_SIZE = 20;
+  const total = workItemIds.length;
+  const totalChunks = Math.ceil(total / CHUNK_SIZE);
+  let deleted = 0;
+
+  if (total === 0) {
+    sendSSEEvent(res, "overwrite:no-items", {
+      message: "No existing work items found. Proceeding with creation.",
+      timestamp: new Date().toISOString(),
+    });
+    return;
+  }
+
+  // Emit deleting event with total count
+  sendSSEEvent(res, "overwrite:deleting", {
+    message: `Found ${total} existing work items. Deleting in chunks of ${CHUNK_SIZE}...`,
+    count: total,
+    timestamp: new Date().toISOString(),
+  });
+
+  // Process in chunks
+  for (let i = 0; i < workItemIds.length; i += CHUNK_SIZE) {
+    const chunk = workItemIds.slice(i, i + CHUNK_SIZE);
+    const currentChunk = Math.floor(i / CHUNK_SIZE) + 1;
+
+    try {
+      // Delete this chunk (permanently with destroy=true)
+      await client.deleteWorkItems(project, chunk, true);
+
+      deleted += chunk.length;
+
+      // Emit progress event after successful deletion
+      sendSSEEvent(res, "overwrite:progress", {
+        message: `Deleted chunk ${currentChunk} of ${totalChunks} (${chunk.length} items)`,
+        deleted: deleted,
+        total: total,
+        currentChunk: currentChunk,
+        totalChunks: totalChunks,
+        timestamp: new Date().toISOString(),
+      });
+    } catch (error: any) {
+      // Emit error and abort
+      sendSSEEvent(res, "overwrite:error", {
+        error: error.message || "Failed to delete work items",
+        message: "Overwrite operation failed. Aborting work item creation.",
+        timestamp: new Date().toISOString(),
+      });
+      throw error;
+    }
+  }
+
+  // Emit completion event
+  sendSSEEvent(res, "overwrite:deleted", {
+    message: `Successfully deleted ${total} existing work items`,
+    count: total,
+    timestamp: new Date().toISOString(),
+  });
+}
+
+/**
+ * Check if a project has work items
+ * GET /api/azure-devops/projects/:project/workitems/check?configId=xxx
+ * Query params: configId (optional) - If provided, uses that configuration. If omitted, uses active configuration.
+ */
+export const checkWorkItems = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { project } = req.params;
+    const configId = req.query.configId as string | undefined;
+
+    // Validation
+    if (
+      !project ||
+      typeof project !== "string" ||
+      project.trim().length === 0
+    ) {
+      res.status(400).json({
+        success: false,
+        error: "Project parameter is required and must be a non-empty string",
+      });
+      return;
+    }
+
+    // Get configured client
+    const client = await getAzureDevOpsClient(configId);
+
+    // Query for work items in the project using WIQL
+    // Using System.TeamProject field to filter by project
+    const wiql = `SELECT [System.Id] FROM WorkItems WHERE [System.TeamProject] = '${project}'`;
+    
+    const queryResult = await client.queryWorkItems(project, wiql);
+
+    // Extract work items from query result
+    const workItems = queryResult.workItems || [];
+    const hasWorkItems = workItems.length > 0;
+    const count = workItems.length;
+
+    res.json({
+      success: true,
+      data: {
+        hasWorkItems,
+        count,
+        workItemIds: workItems.map((wi: any) => wi.id),
+      },
+    });
+  } catch (error: any) {
+    const statusCode = error.statusCode || 500;
+    res.status(statusCode).json({
+      success: false,
+      error: error.message || "Failed to check work items",
+      details: error.statusCode
+        ? `HTTP ${error.statusCode}: ${error.message || "Failed to check work items"}`
+        : "Failed to check work items",
+    });
+  }
+};
+
+/**
  * Create work items from Ardoq hierarchy
  * POST /api/azure-devops/projects/:project/workitems?configId=xxx
  * Uses Server-Sent Events (SSE) to stream progress updates
@@ -183,6 +315,7 @@ export const createWorkItems = async (
   try {
     const { project } = req.params;
     const configId = req.query.configId as string | undefined;
+    const overwrite = req.query.overwrite === "true" || req.query.overwrite === true;
     const { epics }: CreateWorkItemsRequest = req.body;
 
     // Validation
@@ -212,6 +345,33 @@ export const createWorkItems = async (
     const client = await getAzureDevOpsClient(configId);
     const config = client.getConfig();
     const organization = config.organization;
+
+    // Handle overwrite mode: delete all existing work items before creating new ones
+    if (overwrite) {
+      try {
+        sendSSEEvent(res, "overwrite:started", {
+          message: "Overwrite mode enabled. Checking for existing work items...",
+          timestamp: new Date().toISOString(),
+        });
+
+        // Query for all existing work items in the project
+        const wiql = `SELECT [System.Id] FROM WorkItems WHERE [System.TeamProject] = '${project}'`;
+        const queryResult = await client.queryWorkItems(project, wiql);
+        const existingWorkItems = queryResult.workItems || [];
+        const workItemIds = existingWorkItems.map((wi: any) => wi.id);
+
+        // Delete work items in chunks of 20
+        await deleteWorkItemsInChunks(client, project, workItemIds, res);
+      } catch (error: any) {
+        sendSSEEvent(res, "overwrite:error", {
+          error: error.message || "Failed to delete existing work items",
+          message: "Overwrite operation failed. Aborting work item creation.",
+          timestamp: new Date().toISOString(),
+        });
+        res.end();
+        return;
+      }
+    }
 
     // Initialize summary counters
     const summary: SyncSummary = {
