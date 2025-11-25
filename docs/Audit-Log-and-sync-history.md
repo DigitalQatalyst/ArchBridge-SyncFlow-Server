@@ -102,7 +102,22 @@ interface SyncHistoryItem {
   azure_devops_id?: number;            // Created Azure DevOps work item ID
   azure_devops_url?: string;           // Link to Azure DevOps work item
   error_message?: string;              // Error message if failed
+  changed_by_user?: AzureDevOpsIdentityRef; // User who created/changed the work item (from System.ChangedBy)
   created_at: string;                  // When item was processed
+}
+
+interface AzureDevOpsIdentityRef {
+  displayName?: string;                // User's display name (e.g., "Dennis Mwangi")
+  uniqueName?: string;                 // User's unique name/email (e.g., "Dennis.Mwangi@DigitalQatalyst.com")
+  id?: string;                         // User's unique ID (e.g., "9650e4c0-699e-600d-a0b5-44b1c8416e57")
+  url?: string;                        // API URL for the user identity
+  imageUrl?: string;                   // URL to user's avatar image
+  descriptor?: string;                 // User's descriptor (e.g., "aad.OTY1MGU0YzAtNjk5ZS03MDBkLWEwYjUtNDRiMWM4NDE2ZTU3")
+  _links?: {                           // Links object
+    avatar?: {
+      href?: string;                   // Avatar image URL
+    };
+  };
 }
 ```
 
@@ -321,6 +336,19 @@ fetch(`/api/sync-history/${syncId}/items?item_type=epic`)
       azure_devops_id: 12345,  // Optional, only if status is "created"
       azure_devops_url: "https://dev.azure.com/org/project/_workitems/edit/12345",  // Optional
       error_message: null,  // Only present if status is "failed"
+      changed_by_user: {  // Optional, only if status is "created" - User who created the work item
+        displayName: "Dennis Mwangi",
+        uniqueName: "Dennis.Mwangi@DigitalQatalyst.com",
+        id: "9650e4c0-699e-600d-a0b5-44b1c8416e57",
+        url: "https://spsproduks1.vssps.visualstudio.com/Aa8aa44bb-4093-4af0-bf43-6acf509a2285/_apis/Identities/9650e4c0-699e-600d-a0b5-44b1c8416e57",
+        imageUrl: "https://dev.azure.com/DigitalQatalyst/_apis/GraphProfile/MemberAvatars/aad.OTY1MGU0YzAtNjk5ZS03MDBkLWEwYjUtNDRiMWM4NDE2ZTU3",
+        descriptor: "aad.OTY1MGU0YzAtNjk5ZS03MDBkLWEwYjUtNDRiMWM4NDE2ZTU3",
+        _links: {
+          avatar: {
+            href: "https://dev.azure.com/DigitalQatalyst/_apis/GraphProfile/MemberAvatars/aad.OTY1MGU0YzAtNjk5ZS03MDBkLWEwYjUtNDRiMWM4NDE2ZTU3"
+          }
+        }
+      },
       created_at: "2024-01-15T10:30:15.000Z"
     }
     // ... more items

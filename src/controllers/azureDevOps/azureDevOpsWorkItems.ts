@@ -43,6 +43,25 @@ async function mapArdoqFieldsToAzureDevOps(
 }
 
 /**
+ * Extract System.ChangedBy from Azure DevOps work item response
+ */
+function extractChangedByUser(response: any): any | undefined {
+  if (response?.fields?.["System.ChangedBy"]) {
+    const changedBy = response.fields["System.ChangedBy"];
+    return {
+      displayName: changedBy.displayName,
+      uniqueName: changedBy.uniqueName,
+      id: changedBy.id,
+      url: changedBy.url,
+      imageUrl: changedBy.imageUrl,
+      descriptor: changedBy.descriptor,
+      _links: changedBy._links,
+    };
+  }
+  return undefined;
+}
+
+/**
  * Create an Epic work item
  */
 async function createEpic(
@@ -51,7 +70,7 @@ async function createEpic(
   epic: Component,
   organization: string,
   fieldMappingConfig: FieldMappingConfig | null
-): Promise<{ id: number; url: string } | null> {
+): Promise<{ id: number; url: string; changedByUser?: any } | null> {
   try {
     const patchDocument = await mapArdoqFieldsToAzureDevOps(
       epic,
@@ -67,6 +86,7 @@ async function createEpic(
     return {
       id: response.id,
       url: response.url || response._links?.html?.href || "",
+      changedByUser: extractChangedByUser(response),
     };
   } catch (error: any) {
     console.error(`Failed to create epic ${epic._id}:`, error);
@@ -84,7 +104,7 @@ async function createFeature(
   epicId: number,
   organization: string,
   fieldMappingConfig: FieldMappingConfig | null
-): Promise<{ id: number; url: string } | null> {
+): Promise<{ id: number; url: string; changedByUser?: any } | null> {
   try {
     const patchDocument = await mapArdoqFieldsToAzureDevOps(
       feature,
@@ -101,6 +121,7 @@ async function createFeature(
     return {
       id: response.id,
       url: response.url || response._links?.html?.href || "",
+      changedByUser: extractChangedByUser(response),
     };
   } catch (error: any) {
     console.error(`Failed to create feature ${feature._id}:`, error);
@@ -118,7 +139,7 @@ async function createUserStory(
   featureId: number,
   organization: string,
   fieldMappingConfig: FieldMappingConfig | null
-): Promise<{ id: number; url: string } | null> {
+): Promise<{ id: number; url: string; changedByUser?: any } | null> {
   try {
     const patchDocument = await mapArdoqFieldsToAzureDevOps(
       userStory,
@@ -135,6 +156,7 @@ async function createUserStory(
     return {
       id: response.id,
       url: response.url || response._links?.html?.href || "",
+      changedByUser: extractChangedByUser(response),
     };
   } catch (error: any) {
     console.error(`Failed to create user story ${userStory._id}:`, error);
@@ -624,6 +646,7 @@ export const createWorkItems = async (
                 status: "created",
                 azure_devops_id: epicId,
                 azure_devops_url: epicUrl,
+                changed_by_user: epicResult.changedByUser,
               });
 
               // Update counters
@@ -730,6 +753,7 @@ export const createWorkItems = async (
                     status: "created",
                     azure_devops_id: featureId,
                     azure_devops_url: featureUrl,
+                    changed_by_user: featureResult.changedByUser,
                   });
 
                   // Update counters
@@ -832,6 +856,7 @@ export const createWorkItems = async (
                         status: "created",
                         azure_devops_id: userStoryResult.id,
                         azure_devops_url: userStoryResult.url,
+                        changed_by_user: userStoryResult.changedByUser,
                       });
 
                       // Update counters

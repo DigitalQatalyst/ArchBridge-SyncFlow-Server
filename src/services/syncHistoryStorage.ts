@@ -47,6 +47,23 @@ export interface SyncHistory {
 }
 
 /**
+ * Azure DevOps IdentityRef interface (for System.ChangedBy)
+ */
+export interface AzureDevOpsIdentityRef {
+  displayName?: string;
+  uniqueName?: string;
+  id?: string;
+  url?: string;
+  imageUrl?: string;
+  descriptor?: string;
+  _links?: {
+    avatar?: {
+      href?: string;
+    };
+  };
+}
+
+/**
  * Sync History Item interface
  */
 export interface SyncHistoryItem {
@@ -59,6 +76,7 @@ export interface SyncHistoryItem {
   azure_devops_id?: number;
   azure_devops_url?: string;
   error_message?: string;
+  changed_by_user?: AzureDevOpsIdentityRef;
   created_at: string;
 }
 
@@ -103,6 +121,7 @@ interface SyncHistoryItemRow {
   azure_devops_id: number | null;
   azure_devops_url: string | null;
   error_message: string | null;
+  changed_by_user: AzureDevOpsIdentityRef | null;
   created_at: string;
 }
 
@@ -151,6 +170,7 @@ class SyncHistoryStorage {
       azure_devops_id: row.azure_devops_id || undefined,
       azure_devops_url: row.azure_devops_url || undefined,
       error_message: row.error_message || undefined,
+      changed_by_user: row.changed_by_user || undefined,
       created_at: row.created_at,
     };
   }
@@ -438,6 +458,7 @@ class SyncHistoryStorage {
         azure_devops_id: data.azure_devops_id || null,
         azure_devops_url: data.azure_devops_url || null,
         error_message: data.error_message || null,
+        changed_by_user: data.changed_by_user || null,
       })
       .select()
       .single();
@@ -469,6 +490,7 @@ class SyncHistoryStorage {
           azure_devops_id: item.azure_devops_id || null,
           azure_devops_url: item.azure_devops_url || null,
           error_message: item.error_message || null,
+          changed_by_user: item.changed_by_user || null,
         }))
       )
       .select();
