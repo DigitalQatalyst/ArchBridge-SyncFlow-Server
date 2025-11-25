@@ -12,8 +12,8 @@ const PORT = process.env.PORT || 3000;
 // CORS configuration - single source of truth
 const allowedOrigins = [
   'https://arch-bridge-sync-flow.vercel.app',
-  'http://localhost:3000',
-  'http://localhost:3001',
+  'http://localhost:8080',
+  // 'http://localhost:3001',
   ...(process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',').map((origin: string) => origin.trim()) : [])
 ];
 

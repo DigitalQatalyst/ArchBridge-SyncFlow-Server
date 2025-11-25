@@ -392,6 +392,104 @@ export class AzureDevOpsClient {
   }
 
   /**
+   * Get work item types for a project
+   * @param project - Project ID or name
+   * @returns Array of work item type definitions
+   */
+  async getWorkItemTypes(project: string): Promise<any[]> {
+    this.initialize();
+    const path = `${project}/_apis/wit/workitemtypes?api-version=7.1`;
+    const response = await this.get<any>(path);
+    return response.value || [];
+  }
+
+  /**
+   * Get a specific work item type definition with its fields
+   * @param project - Project ID or name
+   * @param workItemType - Work item type (e.g., "Epic", "Feature", "User Story")
+   * @returns Work item type definition with fields
+   */
+  async getWorkItemType(project: string, workItemType: string): Promise<any> {
+    this.initialize();
+    const path = `${project}/_apis/wit/workitemtypes/${encodeURIComponent(workItemType)}?$expand=all&api-version=7.1`;
+    return this.get<any>(path);
+  }
+
+  /**
+   * Get all fields for a project
+   * @param project - Project ID or name
+   * @returns Array of field definitions
+   */
+  async getFields(project: string): Promise<any[]> {
+    this.initialize();
+    const path = `${project}/_apis/wit/fields?api-version=7.1`;
+    const response = await this.get<any>(path);
+    return response.value || [];
+  }
+
+  /**
+   * Get fields available for a specific work item type
+   * @param project - Project ID or name
+   * @param workItemType - Work item type (e.g., "Epic", "Feature", "User Story")
+   * @returns Array of field definitions that support the work item type
+   */
+  async getFieldsForWorkItemType(
+    project: string,
+    workItemType: string
+  ): Promise<any[]> {
+    this.initialize();
+    
+    try {
+      // Try to get the work item type definition with expanded fields
+      // This should include the fields available for this work item type
+      const workItemTypeDef = await this.getWorkItemType(project, workItemType);
+      
+      // Check if the work item type definition has a fields property
+      if (workItemTypeDef && workItemTypeDef.fields && Array.isArray(workItemTypeDef.fields)) {
+        return workItemTypeDef.fields;
+      }
+      
+      // Some API versions might return fields in a different structure
+      if (workItemTypeDef && workItemTypeDef.fieldInstances && Array.isArray(workItemTypeDef.fieldInstances)) {
+        return workItemTypeDef.fieldInstances;
+      }
+    } catch (error: any) {
+      // If getting work item type definition fails, log and fall back
+      console.warn(
+        `Could not fetch work item type definition for ${workItemType}, falling back to general fields endpoint:`,
+        error.message
+      );
+    }
+    
+    // Fallback: Get all fields from the project
+    // In Azure DevOps, most fields are available across work item types
+    // The API will validate when creating/updating work items
+    const allFields = await this.getFields(project);
+    
+    // Return all fields - Azure DevOps will validate field availability when creating work items
+    // Filter out only the most basic read-only system fields
+    return allFields.filter((field: any) => {
+      // Exclude very specific read-only system fields that can't be set
+      const excludedFields = [
+        'System.Id',
+        'System.Rev',
+        'System.AuthorizedDate',
+        'System.RevisedDate',
+        'System.AuthorizedAs',
+        'System.Watermark',
+        'System.NodeName', // Area/Iteration path node name
+      ];
+      
+      if (excludedFields.includes(field.referenceName)) {
+        return false;
+      }
+      
+      // Include all other fields
+      return true;
+    });
+  }
+
+  /**
    * Get API configuration info (for debugging)
    */
   getConfig() {

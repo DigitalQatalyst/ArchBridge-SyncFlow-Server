@@ -8,6 +8,10 @@ import * as azureDevOpsTestConnections from "../controllers/azureDevOps/azureDev
 import * as azureDevOpsConfigurations from "../controllers/azureDevOps/azureDevOpsConfigurations";
 import * as azureDevOpsProjects from "../controllers/azureDevOps/azureDevOpsProjects";
 import * as azureDevOpsWorkItems from "../controllers/azureDevOps/azureDevOpsWorkItems";
+import * as syncHistory from "../controllers/syncHistory/syncHistory";
+import * as syncHistoryDiagnostics from "../controllers/syncHistory/syncHistoryDiagnostics";
+import * as auditLogs from "../controllers/auditLogs/auditLogs";
+import * as fieldMapping from "../controllers/fieldMapping/fieldMapping";
 
 const router = express.Router();
 
@@ -69,6 +73,30 @@ router.get("/", (_req: Request, res: Response) => {
           create:
             "POST /api/azure-devops/projects/:project/workitems?configId=xxx&overwrite=true",
         },
+      },
+      fieldMapping: {
+        configs: {
+          list: "GET /api/field-mapping/configs?projectId={projectId}",
+          get: "GET /api/field-mapping/configs/:id",
+          create: "POST /api/field-mapping/configs",
+          update: "PUT /api/field-mapping/configs/:id",
+          delete: "DELETE /api/field-mapping/configs/:id",
+        },
+        workItemTypes:
+          "GET /api/field-mapping/work-item-types?projectId={projectId}&configId={configId}",
+        fields:
+          "GET /api/field-mapping/fields?projectId={projectId}&workItemType={workItemType}&configId={configId}",
+      },
+      syncHistory: {
+        list: "GET /api/sync-history",
+        get: "GET /api/sync-history/:id",
+        items: "GET /api/sync-history/:id/items",
+        stats: "GET /api/sync-history/stats",
+        diagnostics: "GET /api/sync-history/diagnostics",
+      },
+      auditLogs: {
+        list: "GET /api/audit-logs",
+        stats: "GET /api/audit-logs/stats",
       },
     },
   });
@@ -198,5 +226,28 @@ router.post(
   "/azure-devops/projects/:project/workitems",
   azureDevOpsWorkItems.createWorkItems
 );
+
+// Sync History routes
+router.get("/sync-history", syncHistory.listSyncHistory);
+router.get("/sync-history/stats", syncHistory.getSyncHistoryStats);
+router.get("/sync-history/diagnostics", syncHistoryDiagnostics.getSyncHistoryDiagnostics);
+router.get("/sync-history/:id", syncHistory.getSyncHistoryById);
+router.get("/sync-history/:id/items", syncHistory.getSyncHistoryItems);
+
+// Audit Logs routes
+router.get("/audit-logs", auditLogs.listAuditLogs);
+router.get("/audit-logs/stats", auditLogs.getAuditLogStats);
+
+// Field Mapping routes
+router.get("/field-mapping/configs", fieldMapping.getFieldMappingConfigs);
+router.get("/field-mapping/configs/:id", fieldMapping.getFieldMappingConfig);
+router.post("/field-mapping/configs", fieldMapping.createFieldMappingConfig);
+router.put("/field-mapping/configs/:id", fieldMapping.updateFieldMappingConfig);
+router.delete(
+  "/field-mapping/configs/:id",
+  fieldMapping.deleteFieldMappingConfig
+);
+router.get("/field-mapping/work-item-types", fieldMapping.getWorkItemTypes);
+router.get("/field-mapping/fields", fieldMapping.getFieldsForWorkItemType);
 
 export default router;
