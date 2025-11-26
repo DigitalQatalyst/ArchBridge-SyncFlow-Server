@@ -23,6 +23,21 @@ export interface FieldMappingConfig {
 }
 
 /**
+ * Process Template Template (System Default)
+ */
+export interface FieldMappingTemplate {
+  id: string;
+  processTemplateName: string;
+  processTemplateTypeId?: string;
+  name: string;
+  description?: string;
+  isSystemDefault: boolean;
+  mappings: FieldMapping[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
  * Database row interface for field_mapping_configs table
  */
 export interface FieldMappingConfigRow {
@@ -37,11 +52,26 @@ export interface FieldMappingConfigRow {
 }
 
 /**
+ * Database row interface for field_mapping_templates table
+ */
+export interface FieldMappingTemplateRow {
+  id: string;
+  process_template_name: string;
+  process_template_type_id: string | null;
+  name: string;
+  description: string | null;
+  is_system_default: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+/**
  * Database row interface for field_mappings table
  */
 export interface FieldMappingRow {
   id: string;
-  config_id: string;
+  config_id: string | null;
+  template_id: string | null;
   work_item_type: WorkItemType;
   ardoq_field: string;
   azure_devops_field: string;
@@ -104,6 +134,12 @@ export interface WorkItemTypesResponse {
 export interface WorkItemFieldsResponse {
   success: boolean;
   data?: WorkItemField[];
+  error?: string;
+}
+
+export interface FieldMappingTemplateResponse {
+  success: boolean;
+  data?: FieldMappingTemplate | FieldMappingTemplate[];
   error?: string;
 }
 

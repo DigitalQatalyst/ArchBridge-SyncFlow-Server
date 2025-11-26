@@ -320,6 +320,17 @@ export class AzureDevOpsClient {
   }
 
   /**
+   * Get a project by ID or name
+   * @param projectId - Project ID or name
+   * @returns Project details
+   */
+  async getProject(projectId: string): Promise<any> {
+    this.initialize();
+    const path = `/_apis/projects/${encodeURIComponent(projectId)}?api-version=7.1`;
+    return this.get<any>(path);
+  }
+
+  /**
    * Get available process templates for the organization
    * @returns Array of process template definitions
    */

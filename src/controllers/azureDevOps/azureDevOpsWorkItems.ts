@@ -6,11 +6,12 @@ import { auditLogStorage } from "../../services/auditLogStorage";
 import { configStorage } from "../../services/configStorage";
 import { azureDevOpsConfigStorage } from "../../services/azureDevOpsConfigStorage";
 import { fieldMappingEngine } from "../../services/fieldMappingEngine";
-import { FieldMappingConfig } from "../../types/fieldMapping";
+import { FieldMappingConfig, FieldMappingTemplate } from "../../types/fieldMapping";
 
 interface CreateWorkItemsRequest {
   epics: Component[];
-  fieldMappingConfigId?: string;
+  fieldMappingConfigId?: string; // Project-specific config ID
+  processTemplateTemplateName?: string; // Process template template name (e.g., "Agile", "Scrum")
 }
 
 interface SyncSummary {
@@ -30,7 +31,7 @@ async function mapArdoqFieldsToAzureDevOps(
   component: Component,
   organization: string,
   workItemType: "epic" | "feature" | "user_story",
-  fieldMappingConfig: FieldMappingConfig | null,
+  fieldMappingConfig: FieldMappingConfig | FieldMappingTemplate | null,
   parentId?: number
 ): Promise<any[]> {
   return fieldMappingEngine.applyMappings(
@@ -69,7 +70,7 @@ async function createEpic(
   project: string,
   epic: Component,
   organization: string,
-  fieldMappingConfig: FieldMappingConfig | null
+  fieldMappingConfig: FieldMappingConfig | FieldMappingTemplate | null
 ): Promise<{ id: number; url: string; changedByUser?: any } | null> {
   try {
     const patchDocument = await mapArdoqFieldsToAzureDevOps(
@@ -103,7 +104,7 @@ async function createFeature(
   feature: Component,
   epicId: number,
   organization: string,
-  fieldMappingConfig: FieldMappingConfig | null
+  fieldMappingConfig: FieldMappingConfig | FieldMappingTemplate | null
 ): Promise<{ id: number; url: string; changedByUser?: any } | null> {
   try {
     const patchDocument = await mapArdoqFieldsToAzureDevOps(
@@ -138,7 +139,7 @@ async function createUserStory(
   userStory: Component,
   featureId: number,
   organization: string,
-  fieldMappingConfig: FieldMappingConfig | null
+  fieldMappingConfig: FieldMappingConfig | FieldMappingTemplate | null
 ): Promise<{ id: number; url: string; changedByUser?: any } | null> {
   try {
     const patchDocument = await mapArdoqFieldsToAzureDevOps(
@@ -384,7 +385,7 @@ export const createWorkItems = async (
     const configId = req.query.configId as string | undefined;
     const sourceConfigId = req.query.sourceConfigId as string | undefined; // Optional Ardoq config ID
     const overwrite = req.query.overwrite === "true" || req.query.overwrite === true;
-    const { epics, fieldMappingConfigId }: CreateWorkItemsRequest = req.body;
+    const { epics, fieldMappingConfigId, processTemplateTemplateName }: CreateWorkItemsRequest = req.body;
 
     // Validation
     if (
@@ -550,23 +551,26 @@ export const createWorkItems = async (
     const config = client.getConfig();
     const organization = config.organization;
 
-    // Load field mapping configuration
-    let fieldMappingConfig: FieldMappingConfig | null = null;
+    // Load field mapping configuration or template
+    let fieldMappingConfig: FieldMappingConfig | FieldMappingTemplate | null = null;
     try {
       fieldMappingConfig = await fieldMappingEngine.loadConfiguration(
         fieldMappingConfigId,
-        project
+        processTemplateTemplateName,
+        project,
+        configId
       );
       if (fieldMappingConfig) {
+        const configType = 'projectId' in fieldMappingConfig ? 'configuration' : 'template';
         console.log(
-          `Using field mapping configuration: ${fieldMappingConfig.name} (${fieldMappingConfig.id})`
+          `Using field mapping ${configType}: ${fieldMappingConfig.name} (${fieldMappingConfig.id})`
         );
       } else {
-        console.log("Using default field mappings");
+        console.log("Using hardcoded default field mappings");
       }
     } catch (error) {
       console.warn(
-        "Failed to load field mapping configuration, using defaults:",
+        "Failed to load field mapping configuration/template, using defaults:",
         error
       );
       // Continue with default mappings

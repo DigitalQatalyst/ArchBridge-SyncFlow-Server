@@ -4,9 +4,54 @@ This document outlines the backend implementation requirements for field mapping
 
 ## Overview
 
-The backend must implement field mapping functionality that transforms Ardoq field data to Azure DevOps work item fields when creating work items. Field mappings are project-specific and configurable.
+The backend must implement field mapping functionality that transforms Ardoq field data to Azure DevOps work item fields when creating work items. Field mappings support two types:
+
+1. **Process Template Templates** (System Defaults) - Pre-defined, reusable templates for each Azure DevOps process template (Agile, Scrum, CMMI, Basic)
+2. **Project-Specific Configurations** - Custom mappings tied to specific Azure DevOps projects
+
+Users can choose to use a process template template or create project-specific configurations.
 
 ## API Endpoints
+
+### Process Template Templates (System Defaults)
+
+#### 0. Get Process Template Templates
+
+**Endpoint:** `GET /api/field-mapping/templates?processTemplateName={processTemplateName}`
+
+**Query Parameters:**
+
+- `processTemplateName` (optional): Filter by process template name (e.g., "Agile", "Scrum", "CMMI", "Basic"). If omitted, returns all templates.
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "template-agile-001",
+      "processTemplateName": "Agile",
+      "processTemplateTypeId": "adcc42ab-9882-485e-a3ed-7676785c7e0f",
+      "name": "Agile Process Template - Default Mapping",
+      "description": "Default field mapping for Agile process template",
+      "isSystemDefault": true,
+      "mappings": [
+        {
+          "id": "mapping-1",
+          "ardoqField": "description",
+          "azureDevOpsField": "System.Description",
+          "workItemType": "epic"
+        }
+      ],
+      "createdAt": "2024-01-01T12:00:00Z",
+      "updatedAt": "2024-01-01T12:00:00Z"
+    }
+  ]
+}
+```
+
+**Note:** Process template templates are system defaults and are read-only. They cannot be created, updated, or deleted by users.
 
 ### Field Mapping Configuration Management
 
@@ -174,9 +219,11 @@ The backend must implement field mapping functionality that transforms Ardoq fie
 The backend must implement a field mapping engine that:
 
 1. **Loads Field Mapping Configuration**
-   - If `fieldMappingConfigId` is provided in sync request, load that configuration
-   - If not provided, use default mappings (see Default Mappings section)
-   - If configuration doesn't exist, fall back to default mappings
+   - If `fieldMappingConfigId` is provided in sync request, load that project-specific configuration
+   - If `processTemplateTemplateName` is provided, load the process template template for the project's process template
+   - If neither provided, determine project's process template and use the corresponding process template template
+   - If process template template doesn't exist, fall back to hardcoded default mappings (see Default Mappings section)
+   - Resolution priority: project-specific config → process template template → hardcoded defaults
 
 2. **Applies Field Mappings**
    - For each work item (Epic, Feature, User Story):
@@ -190,9 +237,27 @@ The backend must implement a field mapping engine that:
    - Continue processing other fields
    - Never fail the entire sync due to missing fields
 
-### Default Field Mappings
+### Process Template Templates
 
-If no field mapping configuration is provided, use these default mappings:
+System default templates are provided for each Azure DevOps process template. These templates define standard field mappings based on the fields available in each process template, as documented in the [Azure DevOps Work Item Fields documentation](https://learn.microsoft.com/en-us/azure/devops/boards/work-items/guidance/work-item-field?view=azure-devops).
+
+#### Available Process Templates
+
+- **Agile**: Supports Epic, Feature, User Story, Task, and Bug work item types
+- **Scrum**: Supports Epic, Feature, Product Backlog Item, Task, and Bug work item types
+- **Basic**: Supports Epic, Issue, and Task work item types
+- **CMMI**: Supports Epic, Feature, Requirement, Task, Change Request, Review, Risk, and Bug work item types
+
+#### Template Management
+
+- Process template templates are **system defaults** and **not user-editable**
+- Templates are automatically available for all projects using the corresponding process template
+- Templates are pre-populated with standard field mappings based on each process template's available fields
+- Users can create project-specific configurations that override or extend template mappings
+
+### Default Field Mappings (Hardcoded Fallback)
+
+If no field mapping configuration or process template template is available, use these hardcoded default mappings:
 
 #### Epic Default Mappings
 
@@ -264,15 +329,18 @@ Approach: [approach value]
 
 **Request Body Changes:**
 
-- Accept `fieldMappingConfigId` in the request body (optional)
+- Accept `fieldMappingConfigId` (project-specific config) OR `processTemplateTemplateName` in the request body (optional)
 - All Ardoq fields are now included in the request (not just name, description)
 
 **Processing Flow:**
 
 1. **Before Creating Work Items:**
-   - Extract `fieldMappingConfigId` from request body
-   - Load field mapping configuration (or use defaults)
-   - Validate configuration exists (if provided)
+   - Extract `fieldMappingConfigId` or `processTemplateTemplateName` from request body
+   - If `fieldMappingConfigId` provided: Load project-specific configuration
+   - If `processTemplateTemplateName` provided: Load process template template for that template
+   - If neither provided: Determine project's process template and load corresponding process template template
+   - If template not found: Use hardcoded default mappings
+   - Validate configuration/template exists (if provided)
 
 2. **For Each Work Item:**
    - Get work item type (Epic, Feature, User Story)
@@ -282,7 +350,8 @@ Approach: [approach value]
    - Create work item with mapped fields
 
 3. **Error Handling:**
-   - If field mapping config not found: Log warning, use default mappings
+   - If field mapping config not found: Log warning, try process template template, then hardcoded defaults
+   - If process template template not found: Log warning, use hardcoded default mappings
    - If mapped field doesn't exist in Azure DevOps: Log warning, skip field
    - Never fail sync due to field mapping issues
 
@@ -291,32 +360,55 @@ Approach: [approach value]
 If storing field mapping configurations in database:
 
 ```sql
+-- Process Template Templates (System Defaults - Read-Only)
+CREATE TABLE field_mapping_templates (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  process_template_name VARCHAR(50) NOT NULL UNIQUE, -- 'Agile', 'Scrum', 'CMMI', 'Basic'
+  process_template_type_id VARCHAR(255), -- Azure DevOps process template type ID
+  name VARCHAR(255) NOT NULL,
+  description TEXT,
+  is_system_default BOOLEAN DEFAULT TRUE, -- Always true for templates
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Project-Specific Field Mapping Configurations
 CREATE TABLE field_mapping_configs (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name VARCHAR(255) NOT NULL,
   description TEXT,
   project_id VARCHAR(255) NOT NULL,
   project_name VARCHAR(255),
+  process_template_name VARCHAR(50), -- Reference to process template used by project
   is_default BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMP DEFAULT NOW(),
   updated_at TIMESTAMP DEFAULT NOW(),
   UNIQUE(project_id, name)
 );
 
+-- Field Mappings (for both templates and project configs)
 CREATE TABLE field_mappings (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  config_id UUID NOT NULL REFERENCES field_mapping_configs(id) ON DELETE CASCADE,
+  template_id UUID REFERENCES field_mapping_templates(id) ON DELETE CASCADE,
+  config_id UUID REFERENCES field_mapping_configs(id) ON DELETE CASCADE,
   work_item_type VARCHAR(50) NOT NULL CHECK (work_item_type IN ('epic', 'feature', 'user_story')),
   ardoq_field VARCHAR(255) NOT NULL,
   azure_devops_field VARCHAR(255) NOT NULL,
   transform_function TEXT, -- Optional: JSON or code for transformation
   created_at TIMESTAMP DEFAULT NOW(),
-  UNIQUE(config_id, work_item_type, ardoq_field)
+  CHECK (
+    (template_id IS NOT NULL AND config_id IS NULL) OR
+    (template_id IS NULL AND config_id IS NOT NULL)
+  )
 );
 
+CREATE INDEX idx_field_mapping_templates_process ON field_mapping_templates(process_template_name);
 CREATE INDEX idx_field_mapping_configs_project ON field_mapping_configs(project_id);
+CREATE INDEX idx_field_mappings_template ON field_mappings(template_id);
 CREATE INDEX idx_field_mappings_config ON field_mappings(config_id);
 ```
+
+**Note:** Process template templates should be pre-populated with system defaults during database initialization/migration. These templates are read-only and cannot be modified by users.
 
 ## Azure DevOps Field References
 
@@ -349,19 +441,21 @@ Custom fields follow the pattern:
 
 ## Implementation Checklist
 
-- [ ] Create database tables for field mapping configurations (if using database)
-- [ ] Implement field mapping configuration CRUD endpoints
+- [ ] Create database tables for field mapping templates and configurations (if using database)
+- [ ] Create and populate system default process template templates (Agile, Scrum, CMMI, Basic)
+- [ ] Implement API endpoint to list process template templates (read-only)
+- [ ] Implement field mapping configuration CRUD endpoints (project-specific)
 - [ ] Implement work item types and fields endpoints
-- [ ] Create field mapping engine service
-- [ ] Implement default field mappings
+- [ ] Create field mapping engine service with template resolution logic
+- [ ] Implement mapping resolution: project-specific → process template template → hardcoded defaults
 - [ ] Implement Feature description concatenation logic
-- [ ] Update sync endpoint to accept and use field mapping config ID
+- [ ] Update sync endpoint to accept field mapping config ID or process template template name
 - [ ] Add field transformation logic (priority, tags, dates)
-- [ ] Add error handling for missing fields/configs
+- [ ] Add error handling for missing fields/configs/templates
 - [ ] Add logging for field mapping operations
-- [ ] Write unit tests for field mapping engine
+- [ ] Write unit tests for field mapping engine and template resolution
 - [ ] Write integration tests for field mapping endpoints
-- [ ] Document field mapping API endpoints
+- [ ] Document field mapping API endpoints and template system
 
 ## Testing Requirements
 

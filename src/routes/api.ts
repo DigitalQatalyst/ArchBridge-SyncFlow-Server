@@ -4,6 +4,7 @@ import * as ardoqWorkspaces from "../controllers/ardoq/ardoqWorkspaces";
 import * as ardoqComponents from "../controllers/ardoq/ardoqComponents";
 import * as ardoqConfigurations from "../controllers/ardoq/ardoqConfigurations";
 import * as ardoqHierarchy from "../controllers/ardoq/ardoqHierarchy";
+import * as ardoqFieldMappingDiagnostics from "../controllers/ardoq/ardoqFieldMappingDiagnostics";
 import * as azureDevOpsTestConnections from "../controllers/azureDevOps/azureDevOpsTestConnections";
 import * as azureDevOpsConfigurations from "../controllers/azureDevOps/azureDevOpsConfigurations";
 import * as azureDevOpsProjects from "../controllers/azureDevOps/azureDevOpsProjects";
@@ -40,6 +41,7 @@ router.get("/", (_req: Request, res: Response) => {
         },
         components: {
           list: "/api/ardoq/workspaces/:workspaceId/components",
+          fieldMappingDiagnostics: "/api/ardoq/workspaces/:workspaceId/field-mapping-diagnostics?configId=xxx&componentType=Feature&limit=5",
         },
         hierarchy: {
           domains: "/api/ardoq/workspaces/:workspaceId/domains",
@@ -75,6 +77,8 @@ router.get("/", (_req: Request, res: Response) => {
         },
       },
       fieldMapping: {
+        templates:
+          "GET /api/field-mapping/templates?processTemplateName={processTemplateName}",
         configs: {
           list: "GET /api/field-mapping/configs?projectId={projectId}",
           get: "GET /api/field-mapping/configs/:id",
@@ -162,6 +166,12 @@ router.get(
   ardoqComponents.listComponents
 );
 
+// Field Mapping Diagnostics
+router.get(
+  "/ardoq/workspaces/:workspaceId/field-mapping-diagnostics",
+  ardoqFieldMappingDiagnostics.diagnoseFieldMapping
+);
+
 // Hierarchy
 router.get("/ardoq/workspaces/:workspaceId/domains", ardoqHierarchy.getDomains);
 router.get(
@@ -239,6 +249,7 @@ router.get("/audit-logs", auditLogs.listAuditLogs);
 router.get("/audit-logs/stats", auditLogs.getAuditLogStats);
 
 // Field Mapping routes
+router.get("/field-mapping/templates", fieldMapping.getTemplates);
 router.get("/field-mapping/configs", fieldMapping.getFieldMappingConfigs);
 router.get("/field-mapping/configs/:id", fieldMapping.getFieldMappingConfig);
 router.post("/field-mapping/configs", fieldMapping.createFieldMappingConfig);

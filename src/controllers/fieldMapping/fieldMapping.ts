@@ -9,6 +9,32 @@ import {
 } from "../../types/fieldMapping";
 
 /**
+ * Get process template templates (system defaults)
+ * GET /api/field-mapping/templates?processTemplateName={processTemplateName}
+ */
+export const getTemplates = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const processTemplateName = req.query.processTemplateName as string | undefined;
+
+    const templates = await fieldMappingStorage.getTemplates(processTemplateName);
+
+    res.json({
+      success: true,
+      data: templates,
+    });
+  } catch (error: any) {
+    console.error("Error fetching field mapping templates:", error);
+    res.status(500).json({
+      success: false,
+      error: error.message || "Failed to fetch field mapping templates",
+    });
+  }
+};
+
+/**
  * Get field mapping configurations for a project
  * GET /api/field-mapping/configs?projectId={projectId}
  */

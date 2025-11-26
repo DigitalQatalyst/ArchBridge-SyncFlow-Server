@@ -1,0 +1,477 @@
+{
+    "success": true,
+    "data": {
+        "workspaceId": "f1af3aa24d7bd9ebad23e076",
+        "totalComponents": 254,
+        "filteredComponents": 254,
+        "analyzedComponents": 5,
+        "componentTypeFilter": "all",
+        "diagnostics": [
+            {
+                "componentId": "3f56f36f4c438ebdc7742ce3",
+                "componentName": "Unified Customer Experience Excellence",
+                "componentType": "Initiative",
+                "workItemType": null,
+                "componentStructure": {
+                    "description": "Create a seamless, intuitive, and consistent digital experience across all customer touchpoints that enables effortless discovery, transaction, and service delivery while providing personalized interactions and transparent service management.",
+                    "_id": "3f56f36f4c438ebdc7742ce3",
+                    "_meta": {
+                        "created": "2025-11-13T13:54:01.952Z",
+                        "createdBy": "4855be9ba5e103c09ede388c",
+                        "lastUpdated": "2025-11-13T13:54:01.952Z",
+                        "lastModifiedBy": "4855be9ba5e103c09ede388c",
+                        "lastModifiedByEmail": "mercy.wangari@digitalqatalyst.com",
+                        "lastModifiedByName": "Mercy Wangari",
+                        "createdByEmail": "mercy.wangari@digitalqatalyst.com",
+                        "createdByName": "Mercy Wangari"
+                    },
+                    "color": null,
+                    "parent": "58eabbba46c6085cb98a2abe",
+                    "name": "Unified Customer Experience Excellence",
+                    "customFields": {
+                        "capability_map_order_level_0": null
+                    },
+                    "type": "Initiative",
+                    "rootWorkspace": "f1af3aa24d7bd9ebad23e076",
+                    "typeId": "p1763129690390",
+                    "icon": null,
+                    "componentKey": "TRY2-50",
+                    "shape": null,
+                    "image": null,
+                    "_version": 1
+                },
+                "fieldValues": {
+                    "description": "Create a seamless, intuitive, and consistent digital experience across all customer touchpoints that enables effortless discovery, transaction, and service delivery while providing personalized interactions and transparent service management."
+                },
+                "otherFields": {
+                    "_meta": {
+                        "created": "2025-11-13T13:54:01.952Z",
+                        "createdBy": "4855be9ba5e103c09ede388c",
+                        "lastUpdated": "2025-11-13T13:54:01.952Z",
+                        "lastModifiedBy": "4855be9ba5e103c09ede388c",
+                        "lastModifiedByEmail": "mercy.wangari@digitalqatalyst.com",
+                        "lastModifiedByName": "Mercy Wangari",
+                        "createdByEmail": "mercy.wangari@digitalqatalyst.com",
+                        "createdByName": "Mercy Wangari"
+                    },
+                    "customFields": {
+                        "capability_map_order_level_0": null
+                    },
+                    "rootWorkspace": "f1af3aa24d7bd9ebad23e076",
+                    "typeId": "p1763129690390",
+                    "componentKey": "TRY2-50",
+                    "_version": 1
+                },
+                "mappingTests": {},
+                "summary": {
+                    "totalFields": 15,
+                    "mappedFieldsFound": 1,
+                    "otherFieldsFound": 6,
+                    "mappingTestsPassed": 0,
+                    "mappingTestsFailed": 0
+                }
+            },
+            {
+                "componentId": "139eed7a66c09110355adb4f",
+                "componentName": "Stage 0 - Contextual Onboarding & Guidance",
+                "componentType": "Epic",
+                "workItemType": "epic",
+                "componentStructure": {
+                    "description": "Provide role-based onboarding experiences and contextual help that accelerates user proficiency and reduces support burden.",
+                    "_id": "139eed7a66c09110355adb4f",
+                    "_meta": {
+                        "created": "2025-11-13T13:54:01.952Z",
+                        "createdBy": "4855be9ba5e103c09ede388c",
+                        "lastUpdated": "2025-11-14T09:18:23.196Z",
+                        "lastModifiedBy": "4855be9ba5e103c09ede388c",
+                        "lastModifiedByEmail": "mercy.wangari@digitalqatalyst.com",
+                        "lastModifiedByName": "Mercy Wangari",
+                        "createdByEmail": "mercy.wangari@digitalqatalyst.com",
+                        "createdByName": "Mercy Wangari"
+                    },
+                    "color": null,
+                    "parent": "3f56f36f4c438ebdc7742ce3",
+                    "name": "Stage 0 - Contextual Onboarding & Guidance",
+                    "customFields": {
+                        "capability_map_order_level_0": "1",
+                        "priority": "High"
+                    },
+                    "type": "Epic",
+                    "rootWorkspace": "f1af3aa24d7bd9ebad23e076",
+                    "typeId": "p1765050623372",
+                    "icon": null,
+                    "componentKey": "TRY2-66",
+                    "shape": null,
+                    "image": null,
+                    "_version": 3
+                },
+                "fieldValues": {
+                    "description": "Provide role-based onboarding experiences and contextual help that accelerates user proficiency and reduces support burden."
+                },
+                "otherFields": {
+                    "_meta": {
+                        "created": "2025-11-13T13:54:01.952Z",
+                        "createdBy": "4855be9ba5e103c09ede388c",
+                        "lastUpdated": "2025-11-14T09:18:23.196Z",
+                        "lastModifiedBy": "4855be9ba5e103c09ede388c",
+                        "lastModifiedByEmail": "mercy.wangari@digitalqatalyst.com",
+                        "lastModifiedByName": "Mercy Wangari",
+                        "createdByEmail": "mercy.wangari@digitalqatalyst.com",
+                        "createdByName": "Mercy Wangari"
+                    },
+                    "customFields": {
+                        "capability_map_order_level_0": "1",
+                        "priority": "High"
+                    },
+                    "rootWorkspace": "f1af3aa24d7bd9ebad23e076",
+                    "typeId": "p1765050623372",
+                    "componentKey": "TRY2-66",
+                    "_version": 3
+                },
+                "mappingTests": {
+                    "description": {
+                        "azureDevOpsField": "System.Description",
+                        "extractedValue": "Provide role-based onboarding experiences and contextual help that accelerates user proficiency and reduces support burden.",
+                        "isNull": false,
+                        "isUndefined": false,
+                        "type": "string",
+                        "stringValue": "Provide role-based onboarding experiences and contextual help that accelerates user proficiency and reduces support burden."
+                    },
+                    "priority": {
+                        "azureDevOpsField": "Microsoft.VSTS.Common.Priority",
+                        "isNull": false,
+                        "isUndefined": true,
+                        "type": "undefined",
+                        "stringValue": null
+                    },
+                    "tags": {
+                        "azureDevOpsField": "System.Tags",
+                        "isNull": false,
+                        "isUndefined": true,
+                        "type": "undefined",
+                        "stringValue": null
+                    },
+                    "lastUpdatedBy": {
+                        "azureDevOpsField": "System.ChangedBy",
+                        "isNull": false,
+                        "isUndefined": true,
+                        "type": "undefined",
+                        "stringValue": null
+                    },
+                    "lastUpdatedDate": {
+                        "azureDevOpsField": "System.ChangedDate",
+                        "isNull": false,
+                        "isUndefined": true,
+                        "type": "undefined",
+                        "stringValue": null
+                    }
+                },
+                "summary": {
+                    "totalFields": 15,
+                    "mappedFieldsFound": 1,
+                    "otherFieldsFound": 6,
+                    "mappingTestsPassed": 1,
+                    "mappingTestsFailed": 4
+                }
+            },
+            {
+                "componentId": "d2da9279b2860298b1868cbd",
+                "componentName": "Delivery Tracking & Confirmation",
+                "componentType": "Feature",
+                "workItemType": "feature",
+                "componentStructure": {
+                    "description": null,
+                    "_id": "d2da9279b2860298b1868cbd",
+                    "_meta": {
+                        "created": "2025-11-13T13:54:01.952Z",
+                        "createdBy": "4855be9ba5e103c09ede388c",
+                        "lastUpdated": "2025-11-14T09:32:08.316Z",
+                        "lastModifiedBy": "4855be9ba5e103c09ede388c",
+                        "lastModifiedByEmail": "mercy.wangari@digitalqatalyst.com",
+                        "lastModifiedByName": "Mercy Wangari",
+                        "createdByEmail": "mercy.wangari@digitalqatalyst.com",
+                        "createdByName": "Mercy Wangari"
+                    },
+                    "color": null,
+                    "parent": "b24fb1c02a53e48bde567534",
+                    "name": "Delivery Tracking & Confirmation",
+                    "customFields": {
+                        "capability_map_order_level_0": "1",
+                        "output_definition_of_done": "Trackers, confirmations.",
+                        "purpose": "To inform progress.",
+                        "approach": "Event-driven updates.",
+                        "context_description": "Provide transparent tracking of fulfillment progress with milestone notifications and delivery confirmation.",
+                        "input": "Milestones."
+                    },
+                    "type": "Feature",
+                    "rootWorkspace": "f1af3aa24d7bd9ebad23e076",
+                    "typeId": "p1763399711356",
+                    "icon": null,
+                    "componentKey": "TRY2-45",
+                    "shape": null,
+                    "image": null,
+                    "_version": 2
+                },
+                "fieldValues": {},
+                "otherFields": {
+                    "_meta": {
+                        "created": "2025-11-13T13:54:01.952Z",
+                        "createdBy": "4855be9ba5e103c09ede388c",
+                        "lastUpdated": "2025-11-14T09:32:08.316Z",
+                        "lastModifiedBy": "4855be9ba5e103c09ede388c",
+                        "lastModifiedByEmail": "mercy.wangari@digitalqatalyst.com",
+                        "lastModifiedByName": "Mercy Wangari",
+                        "createdByEmail": "mercy.wangari@digitalqatalyst.com",
+                        "createdByName": "Mercy Wangari"
+                    },
+                    "customFields": {
+                        "capability_map_order_level_0": "1",
+                        "output_definition_of_done": "Trackers, confirmations.",
+                        "purpose": "To inform progress.",
+                        "approach": "Event-driven updates.",
+                        "context_description": "Provide transparent tracking of fulfillment progress with milestone notifications and delivery confirmation.",
+                        "input": "Milestones."
+                    },
+                    "rootWorkspace": "f1af3aa24d7bd9ebad23e076",
+                    "typeId": "p1763399711356",
+                    "componentKey": "TRY2-45",
+                    "_version": 2
+                },
+                "mappingTests": {
+                    "description": {
+                        "azureDevOpsField": "System.Description",
+                        "extractedValue": "",
+                        "isNull": false,
+                        "isUndefined": false,
+                        "type": "string",
+                        "stringValue": ""
+                    },
+                    "tags": {
+                        "azureDevOpsField": "System.Tags",
+                        "isNull": false,
+                        "isUndefined": true,
+                        "type": "undefined",
+                        "stringValue": null
+                    },
+                    "priority": {
+                        "azureDevOpsField": "Microsoft.VSTS.Common.Priority",
+                        "isNull": false,
+                        "isUndefined": true,
+                        "type": "undefined",
+                        "stringValue": null
+                    }
+                },
+                "summary": {
+                    "totalFields": 15,
+                    "mappedFieldsFound": 0,
+                    "otherFieldsFound": 6,
+                    "mappingTestsPassed": 1,
+                    "mappingTestsFailed": 2
+                }
+            },
+            {
+                "componentId": "4f73e64a3d40270046ec1182",
+                "componentName": "Backup & Disaster Recovery",
+                "componentType": "Feature",
+                "workItemType": "feature",
+                "componentStructure": {
+                    "description": null,
+                    "_id": "4f73e64a3d40270046ec1182",
+                    "_meta": {
+                        "created": "2025-11-13T13:54:01.952Z",
+                        "createdBy": "4855be9ba5e103c09ede388c",
+                        "lastUpdated": "2025-11-14T09:32:33.413Z",
+                        "lastModifiedBy": "4855be9ba5e103c09ede388c",
+                        "lastModifiedByEmail": "mercy.wangari@digitalqatalyst.com",
+                        "lastModifiedByName": "Mercy Wangari",
+                        "createdByEmail": "mercy.wangari@digitalqatalyst.com",
+                        "createdByName": "Mercy Wangari"
+                    },
+                    "color": null,
+                    "parent": "9c95de333997c092cd166ab4",
+                    "name": "Backup & Disaster Recovery",
+                    "customFields": {
+                        "capability_map_order_level_0": "1",
+                        "output_definition_of_done": "Backups, tests, monitors.",
+                        "purpose": "To recover from failures.",
+                        "approach": "Backup tools.",
+                        "context_description": "Implement automated backup processes and disaster recovery procedures to ensure business continuity.",
+                        "input": "Schedules."
+                    },
+                    "type": "Feature",
+                    "rootWorkspace": "f1af3aa24d7bd9ebad23e076",
+                    "typeId": "p1763399711356",
+                    "icon": null,
+                    "componentKey": "TRY2-55",
+                    "shape": null,
+                    "image": null,
+                    "_version": 2
+                },
+                "fieldValues": {},
+                "otherFields": {
+                    "_meta": {
+                        "created": "2025-11-13T13:54:01.952Z",
+                        "createdBy": "4855be9ba5e103c09ede388c",
+                        "lastUpdated": "2025-11-14T09:32:33.413Z",
+                        "lastModifiedBy": "4855be9ba5e103c09ede388c",
+                        "lastModifiedByEmail": "mercy.wangari@digitalqatalyst.com",
+                        "lastModifiedByName": "Mercy Wangari",
+                        "createdByEmail": "mercy.wangari@digitalqatalyst.com",
+                        "createdByName": "Mercy Wangari"
+                    },
+                    "customFields": {
+                        "capability_map_order_level_0": "1",
+                        "output_definition_of_done": "Backups, tests, monitors.",
+                        "purpose": "To recover from failures.",
+                        "approach": "Backup tools.",
+                        "context_description": "Implement automated backup processes and disaster recovery procedures to ensure business continuity.",
+                        "input": "Schedules."
+                    },
+                    "rootWorkspace": "f1af3aa24d7bd9ebad23e076",
+                    "typeId": "p1763399711356",
+                    "componentKey": "TRY2-55",
+                    "_version": 2
+                },
+                "mappingTests": {
+                    "description": {
+                        "azureDevOpsField": "System.Description",
+                        "extractedValue": "",
+                        "isNull": false,
+                        "isUndefined": false,
+                        "type": "string",
+                        "stringValue": ""
+                    },
+                    "tags": {
+                        "azureDevOpsField": "System.Tags",
+                        "isNull": false,
+                        "isUndefined": true,
+                        "type": "undefined",
+                        "stringValue": null
+                    },
+                    "priority": {
+                        "azureDevOpsField": "Microsoft.VSTS.Common.Priority",
+                        "isNull": false,
+                        "isUndefined": true,
+                        "type": "undefined",
+                        "stringValue": null
+                    }
+                },
+                "summary": {
+                    "totalFields": 15,
+                    "mappedFieldsFound": 0,
+                    "otherFieldsFound": 6,
+                    "mappingTestsPassed": 1,
+                    "mappingTestsFailed": 2
+                }
+            },
+            {
+                "componentId": "f5651eb0d9858c7084b1ae30",
+                "componentName": "Performance & Analytics Insights",
+                "componentType": "Feature",
+                "workItemType": "feature",
+                "componentStructure": {
+                    "description": null,
+                    "_id": "f5651eb0d9858c7084b1ae30",
+                    "_meta": {
+                        "created": "2025-11-13T13:54:01.952Z",
+                        "createdBy": "4855be9ba5e103c09ede388c",
+                        "lastUpdated": "2025-11-14T09:31:18.258Z",
+                        "lastModifiedBy": "4855be9ba5e103c09ede388c",
+                        "lastModifiedByEmail": "mercy.wangari@digitalqatalyst.com",
+                        "lastModifiedByName": "Mercy Wangari",
+                        "createdByEmail": "mercy.wangari@digitalqatalyst.com",
+                        "createdByName": "Mercy Wangari"
+                    },
+                    "color": null,
+                    "parent": "da247285aa8473909e004b3f",
+                    "name": "Performance & Analytics Insights",
+                    "customFields": {
+                        "capability_map_order_level_0": "1",
+                        "output_definition_of_done": "Dashboards with trends, SLAs, ROI.",
+                        "purpose": "To inform decisions with data.",
+                        "approach": "Analytics backends; visualizations.",
+                        "context_description": "Provide customers with metrics and insights on their service usage, performance, and ROI.",
+                        "input": "Usage data."
+                    },
+                    "type": "Feature",
+                    "rootWorkspace": "f1af3aa24d7bd9ebad23e076",
+                    "typeId": "p1763399711356",
+                    "icon": null,
+                    "componentKey": "TRY2-4",
+                    "shape": null,
+                    "image": null,
+                    "_version": 2
+                },
+                "fieldValues": {},
+                "otherFields": {
+                    "_meta": {
+                        "created": "2025-11-13T13:54:01.952Z",
+                        "createdBy": "4855be9ba5e103c09ede388c",
+                        "lastUpdated": "2025-11-14T09:31:18.258Z",
+                        "lastModifiedBy": "4855be9ba5e103c09ede388c",
+                        "lastModifiedByEmail": "mercy.wangari@digitalqatalyst.com",
+                        "lastModifiedByName": "Mercy Wangari",
+                        "createdByEmail": "mercy.wangari@digitalqatalyst.com",
+                        "createdByName": "Mercy Wangari"
+                    },
+                    "customFields": {
+                        "capability_map_order_level_0": "1",
+                        "output_definition_of_done": "Dashboards with trends, SLAs, ROI.",
+                        "purpose": "To inform decisions with data.",
+                        "approach": "Analytics backends; visualizations.",
+                        "context_description": "Provide customers with metrics and insights on their service usage, performance, and ROI.",
+                        "input": "Usage data."
+                    },
+                    "rootWorkspace": "f1af3aa24d7bd9ebad23e076",
+                    "typeId": "p1763399711356",
+                    "componentKey": "TRY2-4",
+                    "_version": 2
+                },
+                "mappingTests": {
+                    "description": {
+                        "azureDevOpsField": "System.Description",
+                        "extractedValue": "",
+                        "isNull": false,
+                        "isUndefined": false,
+                        "type": "string",
+                        "stringValue": ""
+                    },
+                    "tags": {
+                        "azureDevOpsField": "System.Tags",
+                        "isNull": false,
+                        "isUndefined": true,
+                        "type": "undefined",
+                        "stringValue": null
+                    },
+                    "priority": {
+                        "azureDevOpsField": "Microsoft.VSTS.Common.Priority",
+                        "isNull": false,
+                        "isUndefined": true,
+                        "type": "undefined",
+                        "stringValue": null
+                    }
+                },
+                "summary": {
+                    "totalFields": 15,
+                    "mappedFieldsFound": 0,
+                    "otherFieldsFound": 6,
+                    "mappingTestsPassed": 1,
+                    "mappingTestsFailed": 2
+                }
+            }
+        ],
+        "summary": {
+            "componentsWithDescription": 2,
+            "componentsWithoutDescription": 3,
+            "averageFieldsPerComponent": 15,
+            "commonOtherFields": [
+                "_meta",
+                "_version",
+                "componentKey",
+                "customFields",
+                "rootWorkspace",
+                "typeId"
+            ]
+        }
+    }
+}

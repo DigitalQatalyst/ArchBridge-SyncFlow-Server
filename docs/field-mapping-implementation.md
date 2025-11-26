@@ -40,6 +40,7 @@ Field mapping functionality has been fully implemented to enable configurable tr
 ### Tables
 
 #### `field_mapping_configs`
+
 Stores field mapping configuration metadata.
 
 ```sql
@@ -56,11 +57,13 @@ CREATE TABLE field_mapping_configs (
 ```
 
 **Key Features:**
+
 - Unique constraint on `(project_id, name)` to prevent duplicate config names per project
 - `is_default` flag to mark default configurations
 - Automatic `updated_at` timestamp via trigger
 
 #### `field_mappings`
+
 Stores individual field mappings within a configuration.
 
 ```sql
@@ -77,6 +80,7 @@ CREATE TABLE field_mappings (
 ```
 
 **Key Features:**
+
 - Foreign key with CASCADE delete (deleting a config deletes its mappings)
 - Check constraint ensures valid work item types
 - Unique constraint prevents duplicate mappings per config/work item type/field combination
@@ -94,14 +98,17 @@ CREATE TABLE field_mappings (
 ### Field Mapping Configuration Management
 
 #### 1. Get All Configurations for a Project
+
 ```
 GET /api/field-mapping/configs?projectId={projectId}
 ```
 
 **Query Parameters:**
+
 - `projectId` (required): Azure DevOps project ID or name
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -122,6 +129,7 @@ GET /api/field-mapping/configs?projectId={projectId}
 ```
 
 #### 2. Get Specific Configuration
+
 ```
 GET /api/field-mapping/configs/:id
 ```
@@ -129,11 +137,13 @@ GET /api/field-mapping/configs/:id
 **Response:** Single field mapping configuration object
 
 #### 3. Create Configuration
+
 ```
 POST /api/field-mapping/configs
 ```
 
 **Request Body:**
+
 ```json
 {
   "name": "Custom Mapping",
@@ -152,6 +162,7 @@ POST /api/field-mapping/configs
 ```
 
 **Validation:**
+
 - `name` must be non-empty string
 - `projectId` must be non-empty string
 - `mappings` must be an array
@@ -160,6 +171,7 @@ POST /api/field-mapping/configs
 - If `isDefault` is true, other defaults for the project are automatically unset
 
 #### 4. Update Configuration
+
 ```
 PUT /api/field-mapping/configs/:id
 ```
@@ -167,16 +179,19 @@ PUT /api/field-mapping/configs/:id
 **Request Body:** Partial configuration object (same structure as create)
 
 **Behavior:**
+
 - Updates configuration metadata
 - If `mappings` provided, replaces all existing mappings
 - If `isDefault` set to true, unsets other defaults for the project
 
 #### 5. Delete Configuration
+
 ```
 DELETE /api/field-mapping/configs/:id
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -189,15 +204,18 @@ DELETE /api/field-mapping/configs/:id
 ### Work Item Discovery
 
 #### 6. Get Work Item Types
+
 ```
 GET /api/field-mapping/work-item-types?projectId={projectId}&configId={configId}
 ```
 
 **Query Parameters:**
+
 - `projectId` (required): Azure DevOps project ID or name
 - `configId` (optional): Azure DevOps configuration ID for authentication
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -219,21 +237,25 @@ GET /api/field-mapping/work-item-types?projectId={projectId}&configId={configId}
 ```
 
 **Implementation Details:**
+
 - Fetches work item types from Azure DevOps API
 - For each type, fetches available fields
 - Returns fields with their metadata (name, type, reference name)
 
 #### 7. Get Fields for Work Item Type
+
 ```
 GET /api/field-mapping/fields?projectId={projectId}&workItemType={workItemType}&configId={configId}
 ```
 
 **Query Parameters:**
+
 - `projectId` (required): Azure DevOps project ID or name
 - `workItemType` (required): Work item type name (e.g., "Epic", "Feature", "User Story")
 - `configId` (optional): Azure DevOps configuration ID for authentication
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -270,6 +292,7 @@ The `FieldMappingEngine` class (`src/services/fieldMappingEngine.ts`) provides:
 ### Default Field Mappings
 
 #### Epic Default Mappings
+
 - `description` → `System.Description`
 - `priority` → `Microsoft.VSTS.Common.Priority` (with conversion)
 - `tags` → `System.Tags` (array to comma-separated string)
@@ -277,12 +300,14 @@ The `FieldMappingEngine` class (`src/services/fieldMappingEngine.ts`) provides:
 - `lastUpdatedDate` → `System.ChangedDate`
 
 #### Feature Default Mappings
+
 - `description` → `System.Description` (with special concatenation - see below)
 - `tags` → `System.Tags`
 - `priority` → `Microsoft.VSTS.Common.Priority`
 
 **Special Feature Description Handling:**
 For Features, the description field is constructed by concatenating:
+
 1. Main description/context
 2. Purpose
 3. Input
@@ -290,6 +315,7 @@ For Features, the description field is constructed by concatenating:
 5. Approach
 
 Format:
+
 ```
 [Original Description/Context]
 
@@ -300,6 +326,7 @@ Approach: [approach value]
 ```
 
 #### User Story Default Mappings
+
 - `description` → `System.Description`
 - `acceptanceCriteria` → `Microsoft.VSTS.Common.AcceptanceCriteria`
 - `priority` → `Microsoft.VSTS.Common.Priority` (1-4 scale)
@@ -356,6 +383,7 @@ POST /api/azure-devops/projects/:project/workitems?configId={configId}&overwrite
 ```
 
 **Request Body:**
+
 ```json
 {
   "epics": [...],
@@ -468,6 +496,7 @@ All types are defined in `src/types/fieldMapping.ts`:
 ```
 
 The sync will:
+
 1. Load configuration `fm-config-123`
 2. Map `description` → `System.Description`
 3. Map `priority` → `Microsoft.VSTS.Common.Priority` (converted to 2)
@@ -540,4 +569,3 @@ Field mapping is fully implemented and production-ready. It provides:
 ✅ Discovery endpoints for Azure DevOps fields
 
 The implementation follows best practices with proper error handling, type safety, and extensibility for future enhancements.
-
